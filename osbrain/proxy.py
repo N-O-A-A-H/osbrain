@@ -423,17 +423,23 @@ class NSProxy(Pyro4.core.Proxy):
             )
         )
 
-    def shutdown(self, timeout=10.0):
-        """
-        Shutdown the name server. All agents will be shutdown as well.
+    def shutdown(self, timeout=10.):
+       """
+       Shutdown the name server. All agents will be shutdown as well.
 
-        Parameters
-        ----------
-        timeout : float, default is 10.
-            Timeout, in seconds, to wait for the agents to shutdown.
-        """
-        self.shutdown_agents(timeout)
-        try:
-            super()._pyroInvoke('daemon_shutdown', (), {}, flags=0)
-        except ConnectionClosedError:
-            pass
+
+       Parameters
+       ----------
+       timeout : float, default is 10.
+           Timeout, in seconds, to wait for the agents to shutdown.
+       """
+       try:
+           self.shutdown_agents(timeout)
+       except TimeoutError as e:
+           raise
+       finally:
+           try:
+               super()._pyroInvoke('daemon_shutdown', (), {}, flags=0)
+           except ConnectionClosedError:
+               pass
+
